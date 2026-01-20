@@ -20,6 +20,18 @@ https://beta.plati.ai
 
 ---
 
+## Table of Contents
+
+1. [List Channels](#1-list-channels)
+2. [List Contacts](#2-list-contacts-by-channel)
+3. [List Conversations](#3-list-conversations)
+4. [Send Text Message](#4-send-text-message)
+5. [Send WhatsApp Template](#5-send-whatsapp-template)
+6. [Send Message by Phone Number](#6-send-message-by-phone-number) ⭐ NEW
+7. [Verify Phone on WhatsApp](#7-verify-phone-on-whatsapp) ⭐ NEW
+
+---
+
 ## 1. List Channels
 
 Before sending messages, you need to know which channels are available in your workspace.
@@ -112,8 +124,8 @@ curl -X GET "https://beta.plati.ai/v1/channels/550e8400-e29b-41d4-a716-446655440
     {
       "uid": "550e8400-e29b-41d4-a716-446655440001",
       "name": "John Doe",
-      "identifier": "+5511999999999",
-      "identifierType": "phone",
+      "identifier": "5511999999999",
+      "identifierType": "PHONE",
       "isVerified": true,
       "isActive": true,
       "createdAt": "2024-01-15T10:00:00Z"
@@ -265,7 +277,7 @@ curl -X POST "https://beta.plati.ai/v1/conversations/550e8400-e29b-41d4-a716-446
   "message": {
     "uid": "550e8400-e29b-41d4-a716-446655440001",
     "messageType": "text",
-    "status": "SENT",
+    "status": "queued",
     "createdAt": "2024-01-15T10:30:00Z",
     "sentAt": "2024-01-15T10:30:01Z",
     "contents": [
@@ -279,8 +291,7 @@ curl -X POST "https://beta.plati.ai/v1/conversations/550e8400-e29b-41d4-a716-446
     ]
   },
   "meta": {
-    "queuedForDelivery": true,
-    "estimatedDeliveryTime": "2024-01-15T10:30:05Z"
+    "authType": "apikey"
   }
 }
 ```
@@ -434,7 +445,7 @@ curl -X POST "https://beta.plati.ai/v1/conversations/550e8400-e29b-41d4-a716-446
   "message": {
     "uid": "550e8400-e29b-41d4-a716-446655440002",
     "messageType": "template",
-    "status": "SENT",
+    "status": "queued",
     "createdAt": "2024-01-15T10:30:00Z",
     "sentAt": "2024-01-15T10:30:01Z",
     "contents": [
@@ -460,10 +471,211 @@ curl -X POST "https://beta.plati.ai/v1/conversations/550e8400-e29b-41d4-a716-446
     ]
   },
   "meta": {
-    "queuedForDelivery": true,
-    "estimatedDeliveryTime": "2024-01-15T10:30:05Z"
+    "authType": "apikey"
   }
 }
+```
+
+---
+
+## 6. Send Message by Phone Number ⭐ NEW
+
+Send a message directly to a contact using their phone number, without needing to know the conversation UID. The system will automatically find or create a conversation with the contact.
+
+### Endpoint
+
+```
+POST /v1/channels/{channelUid}/contacts/{phoneNumber}/messages
+```
+
+### Path Parameters
+
+- `channelUid` (required): The channel UID
+- `phoneNumber` (required): Phone number in format: {countryCode}{areaCode}{number} (e.g., `5511999999999`)
+
+### Request Body
+
+Same as [Send Text Message](#4-send-text-message).
+
+### Phone Number Format
+
+The phone number will be automatically normalized before lookup:
+
+| Input Format | Normalized | Valid |
+|--------------|-----------|-------|
+| `5511999999999` | `5511999999999` | ✅ |
+| `+5511999999999` | `5511999999999` | ✅ |
+| `55 11 99999-9999` | `5511999999999` | ✅ |
+
+**Important Notes:**
+- Contact must already exist in the system with this phone number
+- Phone number must be in format: {countryCode}{areaCode}{number} (no +, spaces, or hyphens)
+- Conversation is automatically created or reused if it exists
+- If conversation was inactive for less than 24 hours, it will be reopened automatically
+
+### Example Request
+
+```bash
+curl -X POST "https://beta.plati.ai/v1/channels/550e8400-e29b-41d4-a716-446655440000/contacts/5511999999999/messages" \
+  -H "x-api-key: your-api-key-here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messageType": "text",
+    "contents": [
+      {
+        "type": "text",
+        "data": {
+          "text": "Hello! This message was sent using phone number."
+        },
+        "position": 0
+      }
+    ]
+  }'
+```
+
+### Response (201 Created)
+
+```json
+{
+  "message": {
+    "uid": "550e8400-e29b-41d4-a716-446655440001",
+    "messageType": "text",
+    "status": "queued",
+    "createdAt": "2024-01-15T10:30:00Z",
+    "contents": [
+      {
+        "type": "text",
+        "data": {
+          "text": "Hello! This message was sent using phone number."
+        },
+        "position": 0
+      }
+    ]
+  },
+  "conversationUid": "550e8400-e29b-41d4-a716-446655440002",
+  "contactUid": "550e8400-e29b-41d4-a716-446655440003",
+  "meta": {
+    "authType": "apikey"
+  }
+}
+```
+
+### Error Responses
+
+| Status Code | Description |
+|-------------|-------------|
+| 400 | Invalid phone number or contact inactive |
+| 404 | Channel or contact not found with this phone number |
+| 403 | Insufficient permissions |
+
+### Rate Limits
+
+- **Users**: 100 requests per minute
+- **API Keys**: 10,000 requests per hour
+
+---
+
+## 7. Verify Phone on WhatsApp ⭐ NEW
+
+Check if a phone number is registered on WhatsApp before sending messages. Useful to validate numbers and avoid sending messages to invalid numbers.
+
+### Endpoint
+
+```
+GET /v1/whatsapp/verify/{phoneNumber}
+```
+
+### Path Parameters
+
+- `phoneNumber` (required): Phone number to verify (accepts various formats)
+
+### Phone Number Formats Accepted
+
+The system will normalize the phone number automatically:
+
+| Input | Normalized | Valid |
+|-------|-----------|-------|
+| `5511999999999` | `5511999999999` | ✅ |
+| `+5511999999999` | `5511999999999` | ✅ |
+| `55 11 99999-9999` | `5511999999999` | ✅ |
+| `+55 11 9 9999-9999` | `5511999999999` | ✅ |
+
+### Example Request
+
+```bash
+curl -X GET "https://beta.plati.ai/v1/whatsapp/verify/5511999999999" \
+  -H "x-api-key: your-api-key-here"
+```
+
+### Response (200 OK)
+
+```json
+{
+  "exists": true,
+  "phone": "5511999999999@c.us",
+  "lid": "123456789012345@lid",
+  "normalizedPhone": "5511999999999"
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `exists` | boolean | `true` if number has WhatsApp, `false` otherwise |
+| `phone` | string | Phone number formatted according to WhatsApp response |
+| `lid` | string | WhatsApp's unique identifier for the contact (null if not exists) |
+| `normalizedPhone` | string | Phone number after normalization |
+
+### Example: Number Not on WhatsApp
+
+```json
+{
+  "exists": false,
+  "phone": "5511000000000@c.us",
+  "lid": null,
+  "normalizedPhone": "5511000000000"
+}
+```
+
+### Error Responses
+
+| Status Code | Description |
+|-------------|-------------|
+| 400 | Invalid phone number format |
+| 429 | Rate limit exceeded (try again later) |
+| 503 | Phone verification service not configured or unavailable |
+| 408 | Request timeout (verification took too long) |
+
+### Rate Limits
+
+- **Users**: 30 requests per minute
+- **API Keys**: 500 requests per hour
+
+### Use Case Example
+
+Before sending a message, verify the number:
+
+```bash
+# Step 1: Verify phone
+curl -X GET "https://beta.plati.ai/v1/whatsapp/verify/5511999999999" \
+  -H "x-api-key: your-api-key-here"
+
+# If exists: true, then send message
+curl -X POST "https://beta.plati.ai/v1/channels/{channelUid}/contacts/5511999999999/messages" \
+  -H "x-api-key: your-api-key-here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messageType": "text",
+    "contents": [
+      {
+        "type": "text",
+        "data": {
+          "text": "Hello!"
+        }
+      }
+    ]
+  }'
 ```
 
 ---
@@ -474,9 +686,11 @@ curl -X POST "https://beta.plati.ai/v1/conversations/550e8400-e29b-41d4-a716-446
 2. **Error Handling**: Always implement proper error handling for API responses
 3. **Rate Limiting**: Be mindful of rate limits when sending messages in bulk
 4. **Template Validation**: Always verify template names and parameters before sending
-5. **Conversation UID**: Ensure the conversation exists before attempting to send messages
-6. **Content Array**: Remember that `contents` is an array and can contain multiple content items (max: 10)
-7. **Pagination**: Use cursor-based pagination for listing resources efficiently
+5. **Phone Verification**: Use the `/whatsapp/verify` endpoint to validate phone numbers before sending messages
+6. **Phone Format**: Always send phone numbers in normalized format: {countryCode}{areaCode}{number}
+7. **Conversation Management**: Use the phone number endpoint for simpler integration - it handles conversation creation automatically
+8. **Content Array**: Remember that `contents` is an array and can contain multiple content items (max: 10)
+9. **Pagination**: Use cursor-based pagination for listing resources efficiently
 
 ## Notes
 
@@ -485,7 +699,11 @@ curl -X POST "https://beta.plati.ai/v1/conversations/550e8400-e29b-41d4-a716-446
 - Only WhatsApp Business channels support template messages
 - The `shouldPublishInExternalChannel` flag allows you to store messages without sending them externally
 - All list endpoints support cursor-based pagination for efficient data retrieval
+- Phone verification uses Z-API service and requires proper configuration
+- Conversations are automatically created or reused when sending messages by phone number
+- Inactive conversations (< 24h) are automatically reopened when a new message is sent
 
 ## Support
 
 For more information, refer to the full API documentation or contact support.
+```
