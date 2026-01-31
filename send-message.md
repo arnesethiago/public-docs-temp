@@ -485,7 +485,7 @@ Send a message directly to a contact using their phone number, without needing t
 ### Endpoint
 
 ```
-POST /v1/channels/{channelUid}/contacts/{phoneNumber}/messages
+POST /v1/conversations/channels/{channelUid}/contacts/{phoneNumber}/messages
 ```
 
 ### Path Parameters
@@ -516,7 +516,7 @@ The phone number will be automatically normalized before lookup:
 ### Example Request
 
 ```bash
-curl -X POST "https://beta.plati.ai/v1/channels/550e8400-e29b-41d4-a716-446655440000/contacts/5511999999999/messages" \
+curl -X POST "https://beta.plati.ai/v1/conversations/channels/550e8400-e29b-41d4-a716-446655440000/contacts/5511999999999/messages" \
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -662,7 +662,7 @@ curl -X GET "https://beta.plati.ai/v1/whatsapp/verify/5511999999999" \
   -H "x-api-key: your-api-key-here"
 
 # If exists: true, then send message
-curl -X POST "https://beta.plati.ai/v1/channels/{channelUid}/contacts/5511999999999/messages" \
+curl -X POST "https://beta.plati.ai/v1/conversations/channels/{channelUid}/contacts/5511999999999/messages" \
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -d '{
