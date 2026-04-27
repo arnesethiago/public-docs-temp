@@ -15,7 +15,7 @@ x-api-key: your-api-key-here
 ## Base URL
 
 ```
-https://beta.plati.ai
+https://api.plati.ai
 ```
 
 ---
