@@ -53,7 +53,7 @@ GET /v1/channels
 ### Example Request
 
 ```bash
-curl -X GET "https://beta.plati.ai/v1/channels?limit=20" \
+curl -X GET "https://api.plati.ai/v1/channels?limit=20" \
   -H "x-api-key: your-api-key-here"
 ```
 
@@ -112,7 +112,7 @@ GET /v1/channels/{channelUid}/contacts
 ### Example Request
 
 ```bash
-curl -X GET "https://beta.plati.ai/v1/channels/550e8400-e29b-41d4-a716-446655440000/contacts?limit=20" \
+curl -X GET "https://api.plati.ai/v1/channels/550e8400-e29b-41d4-a716-446655440000/contacts?limit=20" \
   -H "x-api-key: your-api-key-here"
 ```
 
@@ -164,15 +164,15 @@ GET /v1/conversations
 
 ```bash
 # List all conversations
-curl -X GET "https://beta.plati.ai/v1/conversations?limit=20" \
+curl -X GET "https://api.plati.ai/v1/conversations?limit=20" \
   -H "x-api-key: your-api-key-here"
 
 # Filter by channel
-curl -X GET "https://beta.plati.ai/v1/conversations?channelUid=550e8400-e29b-41d4-a716-446655440000&limit=20" \
+curl -X GET "https://api.plati.ai/v1/conversations?channelUid=550e8400-e29b-41d4-a716-446655440000&limit=20" \
   -H "x-api-key: your-api-key-here"
 
 # Filter by contact
-curl -X GET "https://beta.plati.ai/v1/conversations?contactUid=550e8400-e29b-41d4-a716-446655440001&limit=20" \
+curl -X GET "https://api.plati.ai/v1/conversations?contactUid=550e8400-e29b-41d4-a716-446655440001&limit=20" \
   -H "x-api-key: your-api-key-here"
 ```
 
@@ -253,7 +253,7 @@ POST /v1/conversations/{uid}/messages
 ### Example Request
 
 ```bash
-curl -X POST "https://beta.plati.ai/v1/conversations/550e8400-e29b-41d4-a716-446655440000/messages" \
+curl -X POST "https://api.plati.ai/v1/conversations/550e8400-e29b-41d4-a716-446655440000/messages" \
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -328,7 +328,7 @@ GET /v1/channels/{channelUid}/templates
 #### Example Request
 
 ```bash
-curl -X GET "https://beta.plati.ai/v1/channels/your-channel-uid/templates?limit=20&offset=0" \
+curl -X GET "https://api.plati.ai/v1/channels/your-channel-uid/templates?limit=20&offset=0" \
   -H "x-api-key: your-api-key-here"
 ```
 
@@ -409,7 +409,7 @@ The `data` object for template content typically includes:
 ### Example Request
 
 ```bash
-curl -X POST "https://beta.plati.ai/v1/conversations/550e8400-e29b-41d4-a716-446655440000/messages" \
+curl -X POST "https://api.plati.ai/v1/conversations/550e8400-e29b-41d4-a716-446655440000/messages" \
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -516,7 +516,7 @@ The phone number will be automatically normalized before lookup:
 ### Example Request
 
 ```bash
-curl -X POST "https://beta.plati.ai/v1/conversations/channels/550e8400-e29b-41d4-a716-446655440000/contacts/5511999999999/messages" \
+curl -X POST "https://api.plati.ai/v1/conversations/channels/550e8400-e29b-41d4-a716-446655440000/contacts/5511999999999/messages" \
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -603,7 +603,7 @@ The system will normalize the phone number automatically:
 ### Example Request
 
 ```bash
-curl -X GET "https://beta.plati.ai/v1/whatsapp/verify/5511999999999" \
+curl -X GET "https://api.plati.ai/v1/whatsapp/verify/5511999999999" \
   -H "x-api-key: your-api-key-here"
 ```
 
@@ -658,11 +658,11 @@ Before sending a message, verify the number:
 
 ```bash
 # Step 1: Verify phone
-curl -X GET "https://beta.plati.ai/v1/whatsapp/verify/5511999999999" \
+curl -X GET "https://api.plati.ai/v1/whatsapp/verify/5511999999999" \
   -H "x-api-key: your-api-key-here"
 
 # If exists: true, then send message
-curl -X POST "https://beta.plati.ai/v1/conversations/channels/{channelUid}/contacts/5511999999999/messages" \
+curl -X POST "https://api.plati.ai/v1/conversations/channels/{channelUid}/contacts/5511999999999/messages" \
   -H "x-api-key: your-api-key-here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -706,4 +706,3 @@ curl -X POST "https://beta.plati.ai/v1/conversations/channels/{channelUid}/conta
 ## Support
 
 For more information, refer to the full API documentation or contact support.
-```
